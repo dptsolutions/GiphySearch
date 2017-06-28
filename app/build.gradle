@@ -54,6 +54,8 @@ dependencies {
 
     compile 'com.google.code.gson:gson:2.8.1'
 
+    compile 'com.jakewharton.timber:timber:4.5.1'
+
     compile "com.squareup.retrofit2:retrofit:$RETROFIT_VERSION"
     compile "com.squareup.retrofit2:converter-gson:$RETROFIT_VERSION"
     compile "com.squareup.retrofit2:adapter-rxjava:$RETROFIT_VERSION"
