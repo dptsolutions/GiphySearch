@@ -1,5 +1,8 @@
 apply plugin: 'com.android.application'
 
+ext.extApiKeys = new Properties()
+extApiKeys.load(new FileInputStream(file("../apikeys.properties")))
+
 android {
     configurations.all {
         resolutionStrategy.force 'com.google.code.findbugs:jsr305:3.0.1'
@@ -14,6 +17,8 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "GIPHY_API_KEY", "\"" + extApiKeys['giphy.debug'] + "\""
+        buildConfigField "String", "GIPHY_BASE_URL", "\"http://api.giphy.com\""
     }
     buildTypes {
         release {
