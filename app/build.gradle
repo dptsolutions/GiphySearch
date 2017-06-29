@@ -61,6 +61,9 @@ dependencies {
 
     compile 'com.jakewharton.timber:timber:4.5.1'
 
+    compile 'com.jakewharton.threetenabp:threetenabp:1.0.5'
+    compile 'org.aaronhe:threetenbp-gson-adapter:1.0.2'
+
     compile "com.squareup.retrofit2:retrofit:$RETROFIT_VERSION"
     compile "com.squareup.retrofit2:converter-gson:$RETROFIT_VERSION"
     compile "com.squareup.retrofit2:adapter-rxjava:$RETROFIT_VERSION"
