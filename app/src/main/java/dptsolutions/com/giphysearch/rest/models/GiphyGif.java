@@ -128,6 +128,7 @@ public abstract class GiphyGif {
 
     /**
      * The date on which this gif was marked trending, if applicable.
+     * Looks like defaults are either 1/1/1970 or 0/0/0000
      */
     @SerializedName("trending_datetime")
     public abstract LocalDateTime trendingDateTime();
