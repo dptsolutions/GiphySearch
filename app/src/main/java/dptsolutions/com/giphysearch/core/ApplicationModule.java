@@ -5,7 +5,6 @@ import android.content.Context;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.ryanharter.auto.value.gson.AutoValueGsonExtension;
 
 import org.aaronhe.threetengson.InstantConverter;
 import org.aaronhe.threetengson.LocalDateConverter;
@@ -32,7 +31,9 @@ import dagger.Provides;
 import dptsolutions.com.giphysearch.BuildConfig;
 import dptsolutions.com.giphysearch.GiphySearchApplication;
 import dptsolutions.com.giphysearch.rest.AutoValueTypeAdapterFactory;
+import dptsolutions.com.giphysearch.rest.GiphySearchApi;
 import okhttp3.Cache;
+import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -82,7 +83,8 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
-    static Retrofit provideRetrofit(OkHttpClient httpClient, Gson gson) {
+    @GiphyRestApi
+    static Retrofit provideRetrofit(@GiphyRestApi OkHttpClient httpClient, Gson gson) {
         return new Retrofit.Builder()
                 .baseUrl(BuildConfig.GIPHY_BASE_URL)
                 .client(httpClient)
@@ -93,23 +95,38 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
-    static OkHttpClient provideOkHttpClient(Cache cache, HttpLoggingInterceptor loggingInterceptor) {
+    static OkHttpClient provideDefaultOkHttpClient(Cache cache, HttpLoggingInterceptor loggingInterceptor) {
         return new OkHttpClient.Builder()
                 .cache(cache)
                 .connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(20, TimeUnit.SECONDS)
                 .writeTimeout(20, TimeUnit.SECONDS)
                 .addInterceptor(loggingInterceptor)
+                .build();
+    }
+
+    @Provides
+    @Singleton
+    @GiphyRestApi
+    static OkHttpClient provideGiphyOkHttpClient(OkHttpClient defaultClient) {
+        return defaultClient.newBuilder()
                 .addNetworkInterceptor(new GiphyApiKeyInjector())
                 .build();
     }
 
     @Provides
     @Singleton
-    static Cache provideOkHttpCache(@ApplicationContext Context context) {
-        int cacheSize = 50 * 1024 * 1024; // 50 MiB
-        Cache cache = new Cache(context.getCacheDir(), cacheSize);
-        return cache;
+    @ImageHttpClient
+    static OkHttpClient provideImageOkHttpClient(OkHttpClient defaultClient) {
+        return defaultClient.newBuilder()
+                .addNetworkInterceptor(new ImageAcceptHeaderInjector())
+                .build();
+    }
+
+    @Provides
+    @Singleton
+    static GiphySearchApi provideGiphySearchApi(@GiphyRestApi Retrofit retrofit) {
+        return retrofit.create(GiphySearchApi.class);
     }
 
     @Provides
@@ -126,6 +143,14 @@ public class ApplicationModule {
         return interceptor;
     }
 
+    @Provides
+    @Singleton
+    static Cache provideOkHttpCache(@ApplicationContext Context context) {
+        int cacheSize = 50 * 1024 * 1024; // 50 MiB
+        Cache cache = new Cache(context.getCacheDir(), cacheSize);
+        return cache;
+    }
+
     /**
      * Injects the Giphy API key into requests targeting the Giphy API
      */
@@ -140,6 +165,19 @@ public class ApplicationModule {
             //We're going to the Giphy API, inject api key into query string
             HttpUrl newUrl = chain.request().url().newBuilder().addQueryParameter("api_key",BuildConfig.GIPHY_BASE_URL).build();
             Request newRequest = chain.request().newBuilder().url(newUrl).build();
+            return chain.proceed(newRequest);
+        }
+    }
+
+    /**
+     * Injects an accept image/* header into all requests
+     */
+    private static final class ImageAcceptHeaderInjector implements Interceptor {
+
+        @Override
+        public Response intercept(Chain chain) throws IOException {
+            Headers newHeaders = chain.request().headers().newBuilder().add("accept", "image/*").build();
+            Request newRequest = chain.request().newBuilder().headers(newHeaders).build();
             return chain.proceed(newRequest);
         }
     }
