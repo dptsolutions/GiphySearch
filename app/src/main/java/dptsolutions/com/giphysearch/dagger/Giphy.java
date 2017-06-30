@@ -1,4 +1,4 @@
-package dptsolutions.com.giphysearch.core;
+package dptsolutions.com.giphysearch.dagger;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -6,9 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import javax.inject.Qualifier;
 
 /**
- * Dagger qualifier for Giphy REST API related dependencies
+ * Dagger qualifier for Giphy related dependencies
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Qualifier
-public @interface GiphyRestApi {
+public @interface Giphy {
 }

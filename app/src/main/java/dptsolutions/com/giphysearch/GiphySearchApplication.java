@@ -10,8 +10,7 @@ import javax.inject.Inject;
 import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.HasActivityInjector;
-import dptsolutions.com.giphysearch.core.ApplicationModule;
-import dptsolutions.com.giphysearch.core.DaggerApplicationComponent;
+import dptsolutions.com.giphysearch.dagger.DaggerApplicationComponent;
 import timber.log.Timber;
 
 public class GiphySearchApplication extends Application implements HasActivityInjector {

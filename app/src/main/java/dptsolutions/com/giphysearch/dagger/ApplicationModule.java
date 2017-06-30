@@ -1,4 +1,4 @@
-package dptsolutions.com.giphysearch.core;
+package dptsolutions.com.giphysearch.dagger;
 
 import android.content.Context;
 
@@ -30,6 +30,8 @@ import dagger.Module;
 import dagger.Provides;
 import dptsolutions.com.giphysearch.BuildConfig;
 import dptsolutions.com.giphysearch.GiphySearchApplication;
+import dptsolutions.com.giphysearch.repositories.GifRepository;
+import dptsolutions.com.giphysearch.repositories.impl.GiphyGifRepository;
 import dptsolutions.com.giphysearch.rest.AutoValueTypeAdapterFactory;
 import dptsolutions.com.giphysearch.rest.GiphySearchApi;
 import okhttp3.Cache;
@@ -83,8 +85,8 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
-    @GiphyRestApi
-    static Retrofit provideRetrofit(@GiphyRestApi OkHttpClient httpClient, Gson gson) {
+    @Giphy
+    static Retrofit provideRetrofit(@Giphy OkHttpClient httpClient, Gson gson) {
         return new Retrofit.Builder()
                 .baseUrl(BuildConfig.GIPHY_BASE_URL)
                 .client(httpClient)
@@ -107,7 +109,7 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
-    @GiphyRestApi
+    @Giphy
     static OkHttpClient provideGiphyOkHttpClient(OkHttpClient defaultClient) {
         return defaultClient.newBuilder()
                 .addNetworkInterceptor(new GiphyApiKeyInjector())
@@ -125,7 +127,7 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
-    static GiphySearchApi provideGiphySearchApi(@GiphyRestApi Retrofit retrofit) {
+    static GiphySearchApi provideGiphySearchApi(@Giphy Retrofit retrofit) {
         return retrofit.create(GiphySearchApi.class);
     }
 
@@ -149,6 +151,13 @@ public class ApplicationModule {
         int cacheSize = 50 * 1024 * 1024; // 50 MiB
         Cache cache = new Cache(context.getCacheDir(), cacheSize);
         return cache;
+    }
+
+    @Provides
+    @Singleton
+    @Giphy
+    static GifRepository provideGiphyGifRepository(GiphySearchApi api) {
+        return new GiphyGifRepository(api);
     }
 
     /**

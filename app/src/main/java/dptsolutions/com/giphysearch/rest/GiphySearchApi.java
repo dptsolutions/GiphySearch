@@ -21,7 +21,7 @@ public interface GiphySearchApi {
      * @param searchQuery Search query term or prhase.
      * @param limit The maximum number of records to return.
      * @param offset An optional results offset. Defaults to 0.
-     * @param rating Filters results by specified rating.
+     * @param rating Filters results by specified rating. Will include every rating lower than the one specified
      *
      * @return The search results
      */

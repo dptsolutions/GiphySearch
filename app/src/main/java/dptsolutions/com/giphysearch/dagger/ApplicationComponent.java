@@ -1,4 +1,4 @@
-package dptsolutions.com.giphysearch.core;
+package dptsolutions.com.giphysearch.dagger;
 
 import javax.inject.Singleton;
 
