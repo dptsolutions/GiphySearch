@@ -14,5 +14,5 @@ public interface GiphyImageWebP {
     /**
      * The size in bytes of the .webp file corresponding to this GIF.
      */
-    String webp_size();
+    String webpSize();
 }

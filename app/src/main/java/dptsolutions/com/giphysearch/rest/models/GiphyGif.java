@@ -38,6 +38,11 @@ public abstract class GiphyGif {
     public abstract String url();
 
     /**
+     * Undocumented. Probably shortened url direct to the main gif??
+     */
+    public abstract String bitlyGifUrl();
+
+    /**
      * The unique bit.ly URL for this GIF
      */
     public abstract String bitlyUrl();
@@ -70,11 +75,13 @@ public abstract class GiphyGif {
     /**
      * An array of tags for this GIF (Note: Not available when using the Public Beta Key)
      */
+    @Nullable
     public abstract List<String> tags();
 
     /**
      * An array of featured tags for this GIF (Note: Not available when using the Public Beta Key)
      */
+    @Nullable
     public abstract List<String> featuredTags();
 
     /**
@@ -95,22 +102,34 @@ public abstract class GiphyGif {
     public abstract String sourcePostUrl();
 
     /**
+     * Undocumented. Looks to be a 0 or 1
+     */
+    public abstract byte isIndexable();
+
+    /**
      * The date on which this GIF was last updated.
      */
+    @Nullable
     @SerializedName("update_datetime")
     public abstract LocalDateTime updateDateTime();
 
     /**
      * The date this GIF was added to the GIPHY database.
      */
+    @Nullable
     @SerializedName("create_datetime")
     public abstract LocalDateTime createDateTime();
+
+    /**
+     * The creation or upload date from this GIF's source.
+     */
+    @SerializedName("import_datetime")
+    public abstract LocalDateTime importDateTime();
 
     /**
      * The date on which this gif was marked trending, if applicable.
      */
     @SerializedName("trending_datetime")
-    @Nullable
     public abstract LocalDateTime trendingDateTime();
 
     /**

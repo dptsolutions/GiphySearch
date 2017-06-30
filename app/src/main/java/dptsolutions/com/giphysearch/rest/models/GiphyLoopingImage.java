@@ -10,16 +10,6 @@ import com.google.gson.TypeAdapter;
 @AutoValue
 public abstract class GiphyLoopingImage implements GiphyImageMp4 {
 
-    /**
-     * The width of this GIF in pixels.
-     */
-    public abstract String width();
-
-    /**
-     * The height of this GIF in pixels.
-     */
-    public abstract String height();
-
     public static TypeAdapter<GiphyLoopingImage> typeAdapter(Gson gson) {
         return new AutoValue_GiphyLoopingImage.GsonTypeAdapter(gson);
     }
