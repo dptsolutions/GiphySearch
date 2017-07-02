@@ -6,6 +6,7 @@ import dagger.BindsInstance;
 import dagger.Component;
 import dagger.android.support.AndroidSupportInjectionModule;
 import dptsolutions.com.giphysearch.GiphySearchApplication;
+import okhttp3.OkHttpClient;
 
 /**
  * Dagger 2 Component suppling application-wide dependencies
@@ -23,4 +24,7 @@ public interface ApplicationComponent {
     }
 
     void inject(GiphySearchApplication application);
+
+    @ImageHttpClient
+    OkHttpClient imageHttpClient();
 }
