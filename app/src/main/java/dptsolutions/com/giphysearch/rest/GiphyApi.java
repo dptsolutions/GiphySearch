@@ -3,17 +3,19 @@ package dptsolutions.com.giphysearch.rest;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+
 import dptsolutions.com.giphysearch.rest.models.GiphyPagedResponse;
 import dptsolutions.com.giphysearch.rest.models.GiphyResponse;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import rx.Observable;
 import rx.Single;
 
 /**
- * Retrofit client for Giphy's Search API
+ * Retrofit client for Giphy's API
  */
-public interface GiphySearchApi {
+public interface GiphyApi {
 
     /**
      * Search the Giphy API
@@ -26,10 +28,10 @@ public interface GiphySearchApi {
      * @return The search results
      */
     @GET("v1/gifs/search")
-    Single<GiphyPagedResponse> searchGifs(@Query("q") @NonNull String searchQuery,
-                                          @Query("limit") @Nullable Integer limit,
-                                          @Query("offset") @Nullable Integer offset,
-                                          @Query("rating") @Nullable String rating);
+    Observable<GiphyPagedResponse> searchGifs(@Query("q") @NonNull String searchQuery,
+                                              @Query("limit") @Nullable Integer limit,
+                                              @Query("offset") @Nullable Integer offset,
+                                              @Query("rating") @Nullable String rating);
 
     /**
      * Get a specific Gif by ID
@@ -40,6 +42,16 @@ public interface GiphySearchApi {
      */
     @GET("v1/gifs/{gif_id}")
     Single<GiphyResponse> getGifById(@Path("gif_id") @NonNull String gifId);
+
+    /**
+     * Get Trending gifs
+     *
+     * @param rating Filters results by specified rating. Will include every rating lower than the one specified
+     *
+     * @return The search results
+     */
+    @GET("/v1/gifs/trending")
+    Observable<GiphyPagedResponse> getTrending(@Query("rating") @Nullable String rating);
 
 
 }

@@ -40,16 +40,19 @@ public abstract class GiphyGif {
     /**
      * Undocumented. Probably shortened url direct to the main gif??
      */
+    @SerializedName("bitly_gif_url")
     public abstract String bitlyGifUrl();
 
     /**
      * The unique bit.ly URL for this GIF
      */
+    @SerializedName("bitly_url")
     public abstract String bitlyUrl();
 
     /**
      * A URL used for embedding this GIF
      */
+    @SerializedName("embed_url")
     public abstract String embedUrl();
 
     /**
@@ -70,6 +73,7 @@ public abstract class GiphyGif {
     /**
      * Currently unused
      */
+    @SerializedName("content_url")
     public abstract String contentUrl();
 
     /**
@@ -99,11 +103,13 @@ public abstract class GiphyGif {
     /**
      * The URL of the webpage on which this GIF was found.
      */
+    @SerializedName("source_post_url")
     public abstract String sourcePostUrl();
 
     /**
      * Undocumented. Looks to be a 0 or 1
      */
+    @SerializedName("is_indexable")
     public abstract byte isIndexable();
 
     /**

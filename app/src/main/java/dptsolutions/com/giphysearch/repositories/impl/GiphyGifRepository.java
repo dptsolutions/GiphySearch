@@ -8,31 +8,34 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import dagger.Reusable;
 import dptsolutions.com.giphysearch.repositories.GifRepository;
 import dptsolutions.com.giphysearch.repositories.models.Gif;
 import dptsolutions.com.giphysearch.repositories.models.Rating;
-import dptsolutions.com.giphysearch.rest.GiphySearchApi;
+import dptsolutions.com.giphysearch.rest.GiphyApi;
 import dptsolutions.com.giphysearch.rest.models.GiphyGif;
 import dptsolutions.com.giphysearch.rest.models.GiphyPagedResponse;
 import dptsolutions.com.giphysearch.rest.models.GiphyResponse;
+import rx.Observable;
 import rx.Single;
 import rx.functions.Func1;
 
 /**
- * Created by donal on 6/29/2017.
+ * Implementation powered by Giphy
  */
-
+@Reusable
 public class GiphyGifRepository implements GifRepository {
 
     private static final int PAGE_LIMIT = 25;
-    private final GiphySearchApi giphyApi;
+    private final GiphyApi giphyApi;
 
-    public GiphyGifRepository(GiphySearchApi giphyApi) {
+    public GiphyGifRepository(GiphyApi giphyApi) {
 
         this.giphyApi = giphyApi;
     }
+
     @Override
-    public Single<List<Gif>> search(@NonNull List<String> searchTerms, int page, @Nullable Rating rating) {
+    public Observable<List<Gif>> search(@NonNull List<String> searchTerms, int page, @Nullable Rating rating) {
         String searchString = TextUtils.join(",", searchTerms);
         String giphyRating = null;
         if(rating != null) {
@@ -53,10 +56,15 @@ public class GiphyGifRepository implements GifRepository {
                     throw new IllegalArgumentException("Unsupported rating[" + rating + "]");
             }
         }
-        return giphyApi.searchGifs(searchString, PAGE_LIMIT, page * PAGE_LIMIT, giphyRating)
-                .flatMap(new Func1<GiphyPagedResponse, Single<List<Gif>>>() {
+
+        Observable<GiphyPagedResponse> searchObservable = TextUtils.isEmpty(searchString)
+                ? giphyApi.getTrending(giphyRating)
+                : giphyApi.searchGifs(searchString, PAGE_LIMIT, page * PAGE_LIMIT, giphyRating);
+
+        return searchObservable
+                .flatMap(new Func1<GiphyPagedResponse, Observable<List<Gif>>>() {
                     @Override
-                    public Single<List<Gif>> call(GiphyPagedResponse giphyPagedResponse) {
+                    public Observable<List<Gif>> call(GiphyPagedResponse giphyPagedResponse) {
                         List<Gif> results = giphyPagedResponse.data().size() > 0
                                 ? new ArrayList<Gif>(giphyPagedResponse.data().size())
                                 : Collections.<Gif>emptyList();
@@ -69,7 +77,7 @@ public class GiphyGifRepository implements GifRepository {
                                     .build();
                             results.add(result);
                         }
-                        return Single.just(results);
+                        return Observable.just(results);
                     }
                 });
     }

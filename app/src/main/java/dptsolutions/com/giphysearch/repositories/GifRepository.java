@@ -7,6 +7,7 @@ import java.util.List;
 
 import dptsolutions.com.giphysearch.repositories.models.Gif;
 import dptsolutions.com.giphysearch.repositories.models.Rating;
+import rx.Observable;
 import rx.Single;
 
 /**
@@ -24,7 +25,7 @@ public interface GifRepository {
      *
      * @return List of results
      */
-    Single<List<Gif>> search(@NonNull List<String> searchTerms, int page, @Nullable Rating rating);
+    Observable<List<Gif>> search(@NonNull List<String> searchTerms, int page, @Nullable Rating rating);
 
     /**
      * Retrieve individual gif

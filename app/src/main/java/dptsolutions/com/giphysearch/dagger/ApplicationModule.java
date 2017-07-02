@@ -3,6 +3,7 @@ package dptsolutions.com.giphysearch.dagger;
 import android.content.Context;
 
 import com.google.gson.FieldNamingPolicy;
+import com.google.gson.FieldNamingStrategy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -30,10 +31,12 @@ import dagger.Module;
 import dagger.Provides;
 import dptsolutions.com.giphysearch.BuildConfig;
 import dptsolutions.com.giphysearch.GiphySearchApplication;
+import dptsolutions.com.giphysearch.features.search.SearchSubComponent;
 import dptsolutions.com.giphysearch.repositories.GifRepository;
 import dptsolutions.com.giphysearch.repositories.impl.GiphyGifRepository;
 import dptsolutions.com.giphysearch.rest.AutoValueTypeAdapterFactory;
-import dptsolutions.com.giphysearch.rest.GiphySearchApi;
+import dptsolutions.com.giphysearch.rest.GiphyApi;
+import dptsolutions.com.giphysearch.rest.GiphyDateTimeConverter;
 import okhttp3.Cache;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
@@ -51,14 +54,8 @@ import timber.log.Timber;
 /**
  * Dagger 2 module for building app-wide dependencies
  */
-@Module
+@Module(subcomponents = {SearchSubComponent.class})
 public class ApplicationModule {
-
-    //private final Application application;
-
-    //public ApplicationModule(Application application) {
-    //    this.application = application;
-    //}
 
     @Provides
     @Singleton
@@ -71,15 +68,15 @@ public class ApplicationModule {
     @Singleton
     static Gson provideGson() {
         return new GsonBuilder()
+                //.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES) Y U No Work??
                 .registerTypeAdapterFactory(AutoValueTypeAdapterFactory.create())
                 .registerTypeAdapter(Instant.class, new InstantConverter())
                 .registerTypeAdapter(LocalDate.class, new LocalDateConverter())
-                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeConverter())
+                .registerTypeAdapter(LocalDateTime.class, new GiphyDateTimeConverter())
                 .registerTypeAdapter(LocalTime.class, new LocalTimeConverter())
                 .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeConverter())
                 .registerTypeAdapter(OffsetTime.class, new OffsetTimeConverter())
                 .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeConverter())
-                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .create();
     }
 
@@ -127,8 +124,10 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
-    static GiphySearchApi provideGiphySearchApi(@Giphy Retrofit retrofit) {
-        return retrofit.create(GiphySearchApi.class);
+    @Giphy
+    static GifRepository provideGiphyGifRepository(@Giphy Retrofit giphyRetrofit) {
+        GiphyApi giphyApi = giphyRetrofit.create(GiphyApi.class);
+        return new GiphyGifRepository(giphyApi);
     }
 
     @Provides
@@ -153,13 +152,6 @@ public class ApplicationModule {
         return cache;
     }
 
-    @Provides
-    @Singleton
-    @Giphy
-    static GifRepository provideGiphyGifRepository(GiphySearchApi api) {
-        return new GiphyGifRepository(api);
-    }
-
     /**
      * Injects the Giphy API key into requests targeting the Giphy API
      */
@@ -167,12 +159,13 @@ public class ApplicationModule {
 
         @Override
         public Response intercept(Chain chain) throws IOException {
-            if(!chain.request().url().host().equalsIgnoreCase(BuildConfig.GIPHY_BASE_URL)) {
+
+            if(!BuildConfig.GIPHY_BASE_URL.contains(chain.request().url().host())) {
                 return chain.proceed(chain.request());
             }
 
             //We're going to the Giphy API, inject api key into query string
-            HttpUrl newUrl = chain.request().url().newBuilder().addQueryParameter("api_key",BuildConfig.GIPHY_BASE_URL).build();
+            HttpUrl newUrl = chain.request().url().newBuilder().addQueryParameter("api_key", BuildConfig.GIPHY_API_KEY).build();
             Request newRequest = chain.request().newBuilder().url(newUrl).build();
             return chain.proceed(newRequest);
         }
