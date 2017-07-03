@@ -1,9 +1,13 @@
 package dptsolutions.com.giphysearch.features.search;
 
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import com.google.android.flexbox.AlignSelf;
+import com.google.android.flexbox.FlexboxLayoutManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,15 +32,15 @@ class GifAdapter extends RecyclerView.Adapter<GifAdapter.GifViewHolder> {
 
     @Override
     public GifViewHolder onCreateViewHolder(ViewGroup viewGroup, int position) {
-        ImageView imageView = new ImageView(viewGroup.getContext());
-        imageView.setId(R.id.preview);
-        return new GifViewHolder(imageView);
+        LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
+        View gifView = inflater.inflate(R.layout.gif_tile, viewGroup, false);
+        return new GifViewHolder(gifView);
     }
 
     @Override
     public void onBindViewHolder(GifViewHolder viewHolder, int position) {
         Gif gif = gifs.get(position);
-        viewHolder.bind(gif);
+        viewHolder.bind(gif, position % 2 == 0);
     }
 
     @Override
@@ -72,12 +76,20 @@ class GifAdapter extends RecyclerView.Adapter<GifAdapter.GifViewHolder> {
         /**
          * Binds a Gif to this ViewHolder
          */
-        void bind(Gif gif) {
+        void bind(Gif gif, boolean doBreak) {
             this.gif = gif;
             GlideApp.with(gifPreview)
                     .asGif()
                     .load(gif.previewUrl())
+                    .centerCrop()
                     .into(gifPreview);
+
+            ViewGroup.LayoutParams lp = gifPreview.getLayoutParams();
+            if (lp instanceof FlexboxLayoutManager.LayoutParams) {
+                FlexboxLayoutManager.LayoutParams flexboxLp = (FlexboxLayoutManager.LayoutParams) lp;
+                flexboxLp.setWrapBefore(doBreak);
+                flexboxLp.setFlexGrow(0.5f);
+            }
         }
 
         /**

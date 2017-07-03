@@ -134,12 +134,14 @@ public abstract class GiphyImages {
     /**
      * Data surrounding a version of this GIF limited to 50kb that displays the first 1-2 seconds of the GIF.
      */
+    @Nullable
     @SerializedName("preview_gif")
     public abstract GiphyUnspecifiedImage previewGif();
 
     /**
      * Undocumented. Looks like it serves up a 50kb webp format of the GIF
      */
+    @Nullable
     @SerializedName("preview_webp")
     public abstract GiphyUnspecifiedImage previewWebp();
 

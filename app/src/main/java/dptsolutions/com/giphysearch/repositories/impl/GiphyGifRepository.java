@@ -26,7 +26,7 @@ import rx.functions.Func1;
 @Reusable
 public class GiphyGifRepository implements GifRepository {
 
-    private static final int PAGE_LIMIT = 25;
+    private static final int PAGE_LIMIT = 50;
     private final GiphyApi giphyApi;
 
     public GiphyGifRepository(GiphyApi giphyApi) {
@@ -72,7 +72,7 @@ public class GiphyGifRepository implements GifRepository {
                             Gif result = Gif.builder()
                                     .id(gif.id())
                                     .fullUrl(gif.images().original().url())
-                                    .previewUrl(gif.images().previewGif().url())
+                                    .previewUrl(gif.images().fixedWidth().url())
                                     .rating(parseRating(gif.rating()))
                                     .build();
                             results.add(result);
