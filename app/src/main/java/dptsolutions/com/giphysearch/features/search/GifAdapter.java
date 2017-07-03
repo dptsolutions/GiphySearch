@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.google.android.flexbox.AlignSelf;
 import com.google.android.flexbox.FlexboxLayoutManager;
 
 import java.util.ArrayList;
@@ -18,6 +17,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import dptsolutions.com.giphysearch.GlideApp;
 import dptsolutions.com.giphysearch.R;
+import dptsolutions.com.giphysearch.dagger.FlexboxColumnCount;
 import dptsolutions.com.giphysearch.repositories.models.Gif;
 
 /**
@@ -25,10 +25,14 @@ import dptsolutions.com.giphysearch.repositories.models.Gif;
  */
 class GifAdapter extends RecyclerView.Adapter<GifAdapter.GifViewHolder> {
 
+    private final int columnCount;
     private List<Gif> gifs = new ArrayList<>();
 
     @Inject
-    GifAdapter() {}
+    GifAdapter(@FlexboxColumnCount int columnCount) {
+
+        this.columnCount = columnCount;
+    }
 
     @Override
     public GifViewHolder onCreateViewHolder(ViewGroup viewGroup, int position) {
@@ -40,7 +44,7 @@ class GifAdapter extends RecyclerView.Adapter<GifAdapter.GifViewHolder> {
     @Override
     public void onBindViewHolder(GifViewHolder viewHolder, int position) {
         Gif gif = gifs.get(position);
-        viewHolder.bind(gif, position % 2 == 0);
+        viewHolder.bind(gif, position % columnCount == 0);
     }
 
     @Override
