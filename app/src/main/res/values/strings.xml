@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">GiphySearch</string>
     <string name="title_activity_search">SearchActivity</string>
+    <string name="scroll_aware_fab_behavior">dptsolutions.com.giphysearch.widgets.behaviors.ScrollAwareFabBehavior</string>
 </resources>
