@@ -72,7 +72,7 @@ public class GiphyGifRepository implements GifRepository {
                             Gif result = Gif.builder()
                                     .id(gif.id())
                                     .fullUrl(gif.images().original().url())
-                                    .previewUrl(gif.images().fixedWidth().url())
+                                    .previewUrl(gif.images().fixedHeightDownsampled().url())
                                     .rating(parseRating(gif.rating()))
                                     .build();
                             results.add(result);
