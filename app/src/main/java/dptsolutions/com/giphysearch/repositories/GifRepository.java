@@ -35,4 +35,10 @@ public interface GifRepository {
      * @return The gif
      */
     Single<Gif> get(@NonNull String id);
+
+    /**
+     * The supported ratings the GifRepository can handle
+     * @return
+     */
+    List<Rating> supportedRatings();
 }

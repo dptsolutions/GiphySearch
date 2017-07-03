@@ -22,14 +22,14 @@
 
     <include layout="@layout/content_search" />
 
-    <android.support.design.widget.FloatingActionButton
+    <com.getbase.floatingactionbutton.FloatingActionsMenu
         android:id="@+id/fab"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:fabSize="normal"
-        app:useCompatPadding="true"
-        app:srcCompat="@drawable/ic_filter_black_24dp" />
+        app:fab_labelsPosition="left"
+        app:fab_expandDirection="up"
+        app:fab_labelStyle="@style/AppTheme.FloatingActionMenuLabel"/>
 
 </android.support.design.widget.CoordinatorLayout>

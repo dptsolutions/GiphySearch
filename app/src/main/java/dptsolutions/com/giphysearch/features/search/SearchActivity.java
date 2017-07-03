@@ -1,33 +1,29 @@
 package dptsolutions.com.giphysearch.features.search;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.view.ViewGroup;
 
-import com.google.android.flexbox.FlexDirection;
-import com.google.android.flexbox.FlexWrap;
+import com.getbase.floatingactionbutton.AddFloatingActionButton;
+import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.google.android.flexbox.FlexboxLayoutManager;
-import com.google.android.flexbox.JustifyContent;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import dagger.android.AndroidInjection;
 import dptsolutions.com.giphysearch.R;
 import dptsolutions.com.giphysearch.repositories.models.Gif;
 import dptsolutions.com.giphysearch.repositories.models.Rating;
-import rx.subjects.Subject;
-import rx.subscriptions.CompositeSubscription;
 
 public class SearchActivity extends AppCompatActivity implements SearchView {
 
@@ -38,7 +34,18 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     ContentLoadingProgressBar loadingProgressBar;
 
     @BindView(R.id.fab)
-    FloatingActionButton ratingFab;
+    FloatingActionsMenu ratingsFab;
+
+    @BindString(R.string.rating_everyone)
+    String ratingEveryoneLabel;
+    @BindString(R.string.rating_teen)
+    String ratingTeenLabel;
+    @BindString(R.string.rating_adult)
+    String ratingAdultLabel;
+    @BindString(R.string.rating_nsfw)
+    String ratingNsfwLabel;
+    @BindString(R.string.rating_na)
+    String ratingNotAvailableLabel;
 
     @Inject
     SearchPresenter searchPresenter;
@@ -53,12 +60,6 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     private Rating currentRating = Rating.EVERYONE;
     private int currentPage = -1;
 
-    @OnClick(R.id.fab)
-    void onRatingFabClick(View view) {
-        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         AndroidInjection.inject(this);
@@ -68,6 +69,8 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         gifRecyclerView.setLayoutManager(layoutManager);
         gifRecyclerView.setAdapter(gifAdapter);
         searchPresenter.attachView(this);
+
+        initRatingsFab();
     }
 
     @Override
@@ -125,4 +128,48 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         gifRecyclerView.setVisibility(View.GONE);
         loadingProgressBar.show();
     }
+
+    private void initRatingsFab() {
+        for(Rating rating : searchPresenter.getSupportedRatings()) {
+            FloatingActionButton ratingFab = new FloatingActionButton(this);
+            String label = "";
+            switch (rating) {
+                case EVERYONE:
+                    label = ratingEveryoneLabel;
+                    break;
+                case TEEN:
+                    label = ratingTeenLabel;
+                    break;
+                case ADULT:
+                    label = ratingAdultLabel;
+                    break;
+                case NSFW:
+                    label = ratingNsfwLabel;
+                    break;
+                case NA:
+                    label = ratingNotAvailableLabel;
+                    break;
+            }
+            ratingFab.setTitle(label);
+            ratingFab.setTag(R.id.rating, rating);
+            ratingFab.setSize(FloatingActionButton.SIZE_MINI);
+            ratingFab.setOnClickListener(ratingFabClickListener);
+            ratingsFab.addButton(ratingFab);
+        }
+    }
+
+    private View.OnClickListener ratingFabClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Rating selectedRating = (Rating) v.getTag(R.id.rating);
+            if(selectedRating != currentRating) {
+                currentRating = selectedRating;
+                searchPresenter.setSearch(Collections.<String>emptyList(), currentRating);
+                currentPage = 0;
+                searchPresenter.getPage(currentPage);
+            }
+
+            ratingsFab.toggle();
+        }
+    };
 }

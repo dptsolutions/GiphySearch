@@ -28,8 +28,7 @@ import timber.log.Timber;
 class SearchPresenter extends MvpBasePresenter<SearchView> {
     private final GifRepository gifRepository;
     private final CompositeSubscription subscriptions;
-    private ReplaySubject<Integer> paginator =
-            ReplaySubject.createWithTime(1, TimeUnit.MINUTES, AndroidSchedulers.mainThread());
+    private ReplaySubject<Integer> paginator;
 
     @Inject
     SearchPresenter(@Giphy GifRepository gifRepository, CompositeSubscription subscriptions) {
@@ -41,6 +40,8 @@ class SearchPresenter extends MvpBasePresenter<SearchView> {
         if(subscriptions.hasSubscriptions()) {
             subscriptions.clear();
         }
+
+        paginator = ReplaySubject.createWithTime(1, TimeUnit.MINUTES, AndroidSchedulers.mainThread());
 
         subscriptions.add(
                 paginator.onBackpressureBuffer()
@@ -85,6 +86,10 @@ class SearchPresenter extends MvpBasePresenter<SearchView> {
             paginator.onNext(page);
         }
 
+    }
+
+    public List<Rating> getSupportedRatings() {
+        return gifRepository.supportedRatings();
     }
 
     @Override

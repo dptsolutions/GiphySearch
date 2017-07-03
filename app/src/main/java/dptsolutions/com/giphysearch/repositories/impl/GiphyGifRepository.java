@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,6 +27,8 @@ import rx.functions.Func1;
 @Reusable
 public class GiphyGifRepository implements GifRepository {
 
+    private static final List<Rating> SUPPORTED_RATINGS =
+            Arrays.asList(Rating.EVERYONE, Rating.TEEN, Rating.ADULT, Rating.NSFW);
     private static final int PAGE_LIMIT = 50;
     private final GiphyApi giphyApi;
 
@@ -98,6 +101,11 @@ public class GiphyGifRepository implements GifRepository {
                         return Single.just(result);
                     }
                 });
+    }
+
+    @Override
+    public List<Rating> supportedRatings() {
+        return SUPPORTED_RATINGS;
     }
 
     private Rating parseRating(String giphyRating) {

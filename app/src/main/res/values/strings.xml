@@ -2,4 +2,9 @@
     <string name="app_name">GiphySearch</string>
     <string name="title_activity_search">SearchActivity</string>
     <string name="scroll_aware_fab_behavior">dptsolutions.com.giphysearch.widgets.behaviors.ScrollAwareFabBehavior</string>
+    <string name="rating_everyone">Everyone</string>
+    <string name="rating_teen">Teen</string>
+    <string name="rating_adult">Mature</string>
+    <string name="rating_nsfw">Adult Only</string>
+    <string name="rating_na">N/A</string>
 </resources>

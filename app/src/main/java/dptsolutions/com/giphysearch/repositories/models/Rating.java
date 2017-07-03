@@ -23,5 +23,5 @@ public enum Rating {
     /**
      * No rating available
      */
-    NA
+    NA;
 }
