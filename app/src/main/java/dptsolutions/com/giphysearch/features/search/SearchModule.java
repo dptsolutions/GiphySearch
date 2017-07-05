@@ -1,18 +1,13 @@
 package dptsolutions.com.giphysearch.features.search;
 
-import android.app.Activity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.util.DisplayMetrics;
-
-import com.google.android.flexbox.AlignItems;
-import com.google.android.flexbox.FlexDirection;
-import com.google.android.flexbox.FlexWrap;
-import com.google.android.flexbox.FlexboxLayoutManager;
-import com.google.android.flexbox.JustifyContent;
 
 import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
-import dptsolutions.com.giphysearch.dagger.FlexboxColumnCount;
+import dptsolutions.com.giphysearch.dagger.ScreenColumnCount;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
@@ -31,8 +26,8 @@ abstract class SearchModule {
     }
 
     @Provides
-    @FlexboxColumnCount
-    static int provideFlexboxColumnCount(SearchActivity activity) {
+    @ScreenColumnCount
+    static int provideScreenColumnCount(SearchActivity activity) {
         DisplayMetrics dm = new DisplayMetrics();
         activity.getWindowManager().getDefaultDisplay().getMetrics(dm);
 
@@ -51,17 +46,14 @@ abstract class SearchModule {
             Timber.w("What an odd width for a screen - %d", widthInDp);
             colCount = 1;
         }
-        Timber.d("widthInDp[%d] flexboxColumns[%d]", widthInDp, colCount);
+        Timber.d("widthInDp[%d] screenColumns[%d]", widthInDp, colCount);
         return colCount;
     }
 
     @Provides
-    static FlexboxLayoutManager provideFlexboxLayoutManager(SearchActivity activity) {
-        FlexboxLayoutManager layoutManager =new FlexboxLayoutManager(activity);
-        layoutManager.setJustifyContent(JustifyContent.FLEX_START);
-        layoutManager.setFlexWrap(FlexWrap.WRAP);
-        layoutManager.setFlexDirection(FlexDirection.ROW);
-        layoutManager.setAlignItems(AlignItems.FLEX_START);
+    static GridLayoutManager provideFlexboxLayoutManager(SearchActivity activity, @ScreenColumnCount int columnCount) {
+        GridLayoutManager layoutManager =new GridLayoutManager(activity, columnCount);
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         return layoutManager;
     }
 

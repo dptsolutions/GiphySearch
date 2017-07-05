@@ -7,6 +7,7 @@ import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -19,7 +20,6 @@ import android.widget.TextView;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
-import com.google.android.flexbox.FlexboxLayoutManager;
 
 import java.util.List;
 
@@ -71,7 +71,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     GifAdapter gifAdapter;
 
     @Inject
-    FlexboxLayoutManager layoutManager;
+    GridLayoutManager layoutManager;
 
     private String currentSearchTerms = "";
     private Rating currentRating = Rating.EVERYONE;

@@ -6,8 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.google.android.flexbox.FlexboxLayoutManager;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +15,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import dptsolutions.com.giphysearch.GlideApp;
 import dptsolutions.com.giphysearch.R;
-import dptsolutions.com.giphysearch.dagger.FlexboxColumnCount;
+import dptsolutions.com.giphysearch.dagger.ScreenColumnCount;
 import dptsolutions.com.giphysearch.repositories.models.Gif;
 
 /**
@@ -29,7 +27,7 @@ class GifAdapter extends RecyclerView.Adapter<GifAdapter.GifViewHolder> {
     private List<Gif> gifs = new ArrayList<>();
 
     @Inject
-    GifAdapter(@FlexboxColumnCount int columnCount) {
+    GifAdapter(@ScreenColumnCount int columnCount) {
 
         this.columnCount = columnCount;
     }
@@ -89,12 +87,6 @@ class GifAdapter extends RecyclerView.Adapter<GifAdapter.GifViewHolder> {
                     .placeholder(R.drawable.giphy_logo)
                     .into(gifPreview);
 
-            ViewGroup.LayoutParams lp = gifPreview.getLayoutParams();
-            if (lp instanceof FlexboxLayoutManager.LayoutParams) {
-                FlexboxLayoutManager.LayoutParams flexboxLp = (FlexboxLayoutManager.LayoutParams) lp;
-                flexboxLp.setWrapBefore(doBreak);
-                flexboxLp.setFlexGrow(0.5f);
-            }
         }
 
         /**

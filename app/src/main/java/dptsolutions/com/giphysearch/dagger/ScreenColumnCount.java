@@ -10,5 +10,5 @@ import javax.inject.Qualifier;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Qualifier
-public @interface FlexboxColumnCount {
+public @interface ScreenColumnCount {
 }
