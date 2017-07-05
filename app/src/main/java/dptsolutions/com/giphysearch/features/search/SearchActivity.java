@@ -32,6 +32,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import dagger.android.AndroidInjection;
 import dptsolutions.com.giphysearch.R;
+import dptsolutions.com.giphysearch.dagger.ScreenColumnCount;
+import dptsolutions.com.giphysearch.recyclerview.EndlessRecyclerOnScrollListener;
 import dptsolutions.com.giphysearch.repositories.models.Gif;
 import dptsolutions.com.giphysearch.repositories.models.Rating;
 
@@ -73,9 +75,14 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     @Inject
     GridLayoutManager layoutManager;
 
+    @Inject
+    @ScreenColumnCount
+    int columnCount;
+
     private String currentSearchTerms = "";
     private Rating currentRating = Rating.EVERYONE;
     private int currentPage = -1;
+    private EndlessRecyclerOnScrollListener nextPageScrollListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,12 +90,13 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
         ButterKnife.bind(this);
-        gifRecyclerView.setLayoutManager(layoutManager);
-        gifRecyclerView.setAdapter(gifAdapter);
+        initRecyclerView();
         initRatingsFab();
         initToolbar();
         searchPresenter.attachView(this);
     }
+
+
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
@@ -199,9 +207,31 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         }
     }
 
+    private void initRecyclerView() {
+        nextPageScrollListener = new EndlessRecyclerOnScrollListener(layoutManager, columnCount * 5) {
+            @Override
+            public void onLoadMore(int nextPage) {
+                loadNextPage();
+            }
+        };
+        gifRecyclerView.setLayoutManager(layoutManager);
+        gifRecyclerView.setAdapter(gifAdapter);
+        gifRecyclerView.addOnScrollListener(nextPageScrollListener);
+    }
+
     private void startNewSearch() {
         searchPresenter.setSearch(currentSearchTerms, currentRating);
         currentPage = 0;
+        nextPageScrollListener.reset();
+        searchPresenter.getPage(currentPage);
+    }
+
+    private void loadNextPage() {
+        currentPage++;
+        searchPresenter.getPage(currentPage);
+    }
+
+    private void loadCurrentPage() {
         searchPresenter.getPage(currentPage);
     }
 

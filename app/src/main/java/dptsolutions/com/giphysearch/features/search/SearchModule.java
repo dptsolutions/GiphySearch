@@ -51,7 +51,7 @@ abstract class SearchModule {
     }
 
     @Provides
-    static GridLayoutManager provideFlexboxLayoutManager(SearchActivity activity, @ScreenColumnCount int columnCount) {
+    static GridLayoutManager provideLayoutManager(SearchActivity activity, @ScreenColumnCount int columnCount) {
         GridLayoutManager layoutManager =new GridLayoutManager(activity, columnCount);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         return layoutManager;

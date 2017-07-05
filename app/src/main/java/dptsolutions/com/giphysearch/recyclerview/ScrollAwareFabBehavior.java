@@ -1,4 +1,4 @@
-package dptsolutions.com.giphysearch.widgets.behaviors;
+package dptsolutions.com.giphysearch.recyclerview;
 
 import android.content.Context;
 import android.support.design.widget.CoordinatorLayout;
