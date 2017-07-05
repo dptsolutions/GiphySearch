@@ -59,7 +59,14 @@ public class GiphyGifRepository implements GifRepository {
             }
         }
 
-        Observable<GiphyPagedResponse> searchObservable = TextUtils.isEmpty(searchTerms)
+        boolean useTrendingApi = TextUtils.isEmpty(searchTerms);
+
+        if(useTrendingApi && page != 0) {
+            //Trending API isn't paged, so return an observable with an empty list
+            return Observable.just(Collections.<Gif>emptyList());
+        }
+
+        Observable<GiphyPagedResponse> searchObservable = useTrendingApi
                 ? giphyApi.getTrending(giphyRating)
                 : giphyApi.searchGifs(searchTerms, PAGE_LIMIT, page * PAGE_LIMIT, giphyRating);
 
