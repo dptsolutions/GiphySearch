@@ -131,7 +131,9 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     @Override
     public void clear() {
         //Clear gifs out of recyclerview
+        gifRecyclerView.scrollToPosition(0);
         gifAdapter.clear();
+
     }
 
     @Override
@@ -154,9 +156,10 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 boolean handled = false;
 
-                if(actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                //Do the search if they press the search softkey on their keyboard, or the enter key if they
+                //have a hard keyboard
+                if(actionId == EditorInfo.IME_ACTION_SEARCH ||
+                        (event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
                     onSearchClick();
                     handled = true;
                 }
@@ -217,6 +220,10 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
 
     @OnClick(R.id.search_button)
     void onSearchClick() {
+        //Hide the soft keyboard
+        InputMethodManager imm = (InputMethodManager) SearchActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(SearchActivity.this.findViewById(android.R.id.content).getWindowToken(), 0);
+        
         String searchText = searchBox.getText().toString();
         if(TextUtils.isEmpty(searchText)) {
             currentSearchTerms = "";
