@@ -82,6 +82,7 @@ class SearchPresenter extends MvpBasePresenter<SearchView> {
         if(isViewAttached()) {
             if(page == 0) {
                 getView().clear();
+                getView().showLoading();
             }
             paginator.onNext(page);
         }

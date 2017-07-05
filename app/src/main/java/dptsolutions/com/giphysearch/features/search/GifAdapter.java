@@ -86,6 +86,7 @@ class GifAdapter extends RecyclerView.Adapter<GifAdapter.GifViewHolder> {
                     .asGif()
                     .load(gif.previewUrl())
                     .centerCrop()
+                    .placeholder(R.drawable.giphy_logo)
                     .into(gifPreview);
 
             ViewGroup.LayoutParams lp = gifPreview.getLayoutParams();
