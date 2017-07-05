@@ -17,7 +17,32 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|enterAlways"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            app:popupTheme="@style/AppTheme.PopupOverlay">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/search_box"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/search_box_hint"
+                    android:lines="1"
+                    android:inputType="text"
+                    android:imeOptions="actionSearch"/>
+
+                <ImageButton
+                    android:id="@+id/search_button"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    style="@style/Widget.AppCompat.ActionButton"/>
+
+            </LinearLayout>
+
+        </android.support.v7.widget.Toolbar>
 
     </android.support.design.widget.AppBarLayout>
 
@@ -31,7 +56,7 @@
         android:layout_margin="@dimen/fab_margin"
         app:fab_labelsPosition="left"
         app:fab_expandDirection="up"
-        app:fab_addButtonColorNormal="?attr/colorPrimary"
+        app:fab_addButtonColorNormal="?attr/colorAccent"
         app:fab_labelStyle="@style/AppTheme.FloatingActionMenuLabel"/>
 
 </android.support.design.widget.CoordinatorLayout>

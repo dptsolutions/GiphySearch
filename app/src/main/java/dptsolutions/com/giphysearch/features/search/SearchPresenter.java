@@ -36,7 +36,7 @@ class SearchPresenter extends MvpBasePresenter<SearchView> {
         this.subscriptions = subscriptions;
     }
 
-    public void setSearch(final List<String> searchTerms, final Rating rating) {
+    public void setSearch(final String searchTerms, final Rating rating) {
         if(subscriptions.hasSubscriptions()) {
             subscriptions.clear();
         }
@@ -65,7 +65,7 @@ class SearchPresenter extends MvpBasePresenter<SearchView> {
                     }, new Action1<Throwable>() {
                         @Override
                         public void call(Throwable throwable) {
-                            Timber.e(throwable, "Error getting page of notes");
+                            Timber.e(throwable, "Error getting page of gifs");
                             if(isViewAttached()) {
                                 getView().showError();
                             }

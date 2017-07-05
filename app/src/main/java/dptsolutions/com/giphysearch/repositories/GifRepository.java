@@ -25,7 +25,7 @@ public interface GifRepository {
      *
      * @return List of results
      */
-    Observable<List<Gif>> search(@NonNull List<String> searchTerms, int page, @Nullable Rating rating);
+    Observable<List<Gif>> search(@NonNull String searchTerms, int page, @Nullable Rating rating);
 
     /**
      * Retrieve individual gif

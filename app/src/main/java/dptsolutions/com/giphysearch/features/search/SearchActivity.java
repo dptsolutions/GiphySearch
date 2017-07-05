@@ -1,25 +1,35 @@
 package dptsolutions.com.giphysearch.features.search;
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
-import com.getbase.floatingactionbutton.AddFloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.google.android.flexbox.FlexboxLayoutManager;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import butterknife.BindColor;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import dagger.android.AndroidInjection;
 import dptsolutions.com.giphysearch.R;
 import dptsolutions.com.giphysearch.repositories.models.Gif;
@@ -29,12 +39,14 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
 
     @BindView(R.id.recycler_view)
     RecyclerView gifRecyclerView;
-
     @BindView(R.id.loading_progress)
     ContentLoadingProgressBar loadingProgressBar;
-
     @BindView(R.id.fab)
     FloatingActionsMenu ratingsFab;
+    @BindView(R.id.search_box)
+    EditText searchBox;
+    @BindView(R.id.search_button)
+    ImageButton searchButton;
 
     @BindString(R.string.rating_everyone)
     String ratingEveryoneLabel;
@@ -47,6 +59,11 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     @BindString(R.string.rating_na)
     String ratingNotAvailableLabel;
 
+    Drawable searchIcon;
+
+    @BindColor(R.color.colorAccent)
+    int accentColor;
+
     @Inject
     SearchPresenter searchPresenter;
 
@@ -56,7 +73,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     @Inject
     FlexboxLayoutManager layoutManager;
 
-    private List<String> currentSearchTerms = new ArrayList<>();
+    private String currentSearchTerms = "";
     private Rating currentRating = Rating.EVERYONE;
     private int currentPage = -1;
 
@@ -68,9 +85,9 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         ButterKnife.bind(this);
         gifRecyclerView.setLayoutManager(layoutManager);
         gifRecyclerView.setAdapter(gifAdapter);
-        searchPresenter.attachView(this);
-
         initRatingsFab();
+        initToolbar();
+        searchPresenter.attachView(this);
     }
 
     @Override
@@ -86,10 +103,9 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     @Override
     protected void onResume() {
         super.onResume();
-        searchPresenter.setSearch(currentSearchTerms, currentRating);
+
         if(currentPage == -1) {
-            currentPage = 0;
-            searchPresenter.getPage(currentPage);
+            startNewSearch();
         }
     }
 
@@ -129,6 +145,27 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         loadingProgressBar.show();
     }
 
+    private void initToolbar() {
+        searchIcon = DrawableCompat.wrap(AppCompatResources.getDrawable(this,R.drawable.ic_search_black_24dp));
+        searchIcon.setTint(accentColor);
+        searchButton.setImageDrawable(searchIcon);
+        searchBox.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+
+                if(actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                    onSearchClick();
+                    handled = true;
+                }
+
+                return handled;
+            }
+        });
+    }
+
     private void initRatingsFab() {
         for(Rating rating : searchPresenter.getSupportedRatings()) {
             FloatingActionButton ratingFab = new FloatingActionButton(this);
@@ -154,8 +191,15 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
             ratingFab.setTag(R.id.rating, rating);
             ratingFab.setSize(FloatingActionButton.SIZE_MINI);
             ratingFab.setOnClickListener(ratingFabClickListener);
+            ratingFab.setColorNormal(accentColor);
             ratingsFab.addButton(ratingFab);
         }
+    }
+
+    private void startNewSearch() {
+        searchPresenter.setSearch(currentSearchTerms, currentRating);
+        currentPage = 0;
+        searchPresenter.getPage(currentPage);
     }
 
     private View.OnClickListener ratingFabClickListener = new View.OnClickListener() {
@@ -164,12 +208,21 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
             Rating selectedRating = (Rating) v.getTag(R.id.rating);
             if(selectedRating != currentRating) {
                 currentRating = selectedRating;
-                searchPresenter.setSearch(Collections.<String>emptyList(), currentRating);
-                currentPage = 0;
-                searchPresenter.getPage(currentPage);
+                startNewSearch();
             }
 
             ratingsFab.toggle();
         }
     };
+
+    @OnClick(R.id.search_button)
+    void onSearchClick() {
+        String searchText = searchBox.getText().toString();
+        if(TextUtils.isEmpty(searchText)) {
+            currentSearchTerms = "";
+        } else {
+            currentSearchTerms = searchText;
+        }
+        startNewSearch();
+    }
 }

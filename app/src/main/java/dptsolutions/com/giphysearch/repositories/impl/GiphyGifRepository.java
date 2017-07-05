@@ -38,8 +38,7 @@ public class GiphyGifRepository implements GifRepository {
     }
 
     @Override
-    public Observable<List<Gif>> search(@NonNull List<String> searchTerms, int page, @Nullable Rating rating) {
-        String searchString = TextUtils.join(",", searchTerms);
+    public Observable<List<Gif>> search(@NonNull String searchTerms, int page, @Nullable Rating rating) {
         String giphyRating = null;
         if(rating != null) {
             switch (rating) {
@@ -60,9 +59,9 @@ public class GiphyGifRepository implements GifRepository {
             }
         }
 
-        Observable<GiphyPagedResponse> searchObservable = TextUtils.isEmpty(searchString)
+        Observable<GiphyPagedResponse> searchObservable = TextUtils.isEmpty(searchTerms)
                 ? giphyApi.getTrending(giphyRating)
-                : giphyApi.searchGifs(searchString, PAGE_LIMIT, page * PAGE_LIMIT, giphyRating);
+                : giphyApi.searchGifs(searchTerms, PAGE_LIMIT, page * PAGE_LIMIT, giphyRating);
 
         return searchObservable
                 .flatMap(new Func1<GiphyPagedResponse, Observable<List<Gif>>>() {

@@ -39,6 +39,9 @@ public class GiphyDateTimeConverter implements JsonSerializer<LocalDateTime>, Js
     @Override
     public LocalDateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
           throws JsonParseException {
+        if(json.getAsString().equals("0000-00-00 00:00:00")) {
+            return LocalDateTime.MIN;
+        }
         return FORMATTER.parse(json.getAsString(), LocalDateTime.FROM);
     }
 }
