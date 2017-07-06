@@ -8,4 +8,6 @@
     <string name="rating_nsfw">Adult Only</string>
     <string name="rating_na">N/A</string>
     <string name="search_box_hint">Search Giphy</string>
+    <string name="loading_error">Error Retrieving Gif Data</string>
+    <string name="action_retry">Retry</string>
 </resources>

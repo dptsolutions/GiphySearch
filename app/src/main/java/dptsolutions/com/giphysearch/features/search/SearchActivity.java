@@ -3,6 +3,7 @@ package dptsolutions.com.giphysearch.features.search;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
@@ -90,6 +91,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     private Rating currentRating = Rating.EVERYONE;
     private int currentPage = -1;
     private EndlessRecyclerOnScrollListener nextPageScrollListener;
+    private Snackbar errorBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +113,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         initRecyclerView();
         initRatingsFab();
         initToolbar();
+        initErrorSnackbar();
         searchPresenter.attachView(this);
     }
 
@@ -155,7 +158,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
 
     @Override
     public void showError() {
-        //Snackbar?
+        errorBar.show();
     }
 
     @Override
@@ -227,6 +230,19 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         gifRecyclerView.setLayoutManager(layoutManager);
         gifRecyclerView.setAdapter(gifAdapter);
         gifRecyclerView.addOnScrollListener(nextPageScrollListener);
+    }
+
+    private void initErrorSnackbar() {
+        errorBar = Snackbar.make(gifRecyclerView, R.string.loading_error, Snackbar.LENGTH_INDEFINITE);
+        errorBar.setAction(R.string.action_retry, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Since an error was thrown, we need to reset the search
+                searchPresenter.setSearch(currentSearchTerms, currentRating);
+                loadCurrentPage();
+                errorBar.dismiss();
+            }
+        });
     }
 
     private void startNewSearch() {
