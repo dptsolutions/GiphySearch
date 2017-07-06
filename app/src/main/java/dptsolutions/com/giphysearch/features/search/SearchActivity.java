@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.GridLayoutManager;
@@ -16,6 +15,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -37,6 +37,7 @@ import dptsolutions.com.giphysearch.dagger.ScreenColumnCount;
 import dptsolutions.com.giphysearch.recyclerview.EndlessRecyclerOnScrollListener;
 import dptsolutions.com.giphysearch.repositories.models.Gif;
 import dptsolutions.com.giphysearch.repositories.models.Rating;
+import timber.log.Timber;
 
 public class SearchActivity extends AppCompatActivity implements SearchView {
 
@@ -48,7 +49,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     @BindView(R.id.recycler_view)
     RecyclerView gifRecyclerView;
     @BindView(R.id.loading_progress)
-    ContentLoadingProgressBar loadingProgressBar;
+    ProgressBar loadingProgressBar;
     @BindView(R.id.fab)
     FloatingActionsMenu ratingsFab;
     @BindView(R.id.search_box)
@@ -140,7 +141,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     @Override
     public void addGifs(List<Gif> newGifs) {
         gifAdapter.addGifs(newGifs);
-        loadingProgressBar.hide();
+        loadingProgressBar.setVisibility(View.GONE);
         gifRecyclerView.setVisibility(View.VISIBLE);
     }
 
@@ -159,8 +160,9 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
 
     @Override
     public void showLoading() {
+        Timber.d("In showLoading");
         gifRecyclerView.setVisibility(View.GONE);
-        loadingProgressBar.show();
+        loadingProgressBar.setVisibility(View.VISIBLE);
     }
 
     private void initToolbar() {
