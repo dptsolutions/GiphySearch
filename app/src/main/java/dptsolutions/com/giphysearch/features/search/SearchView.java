@@ -18,4 +18,6 @@ interface SearchView extends MvpView {
     void showError();
 
     void showLoading();
+
+    void showNoResults();
 }

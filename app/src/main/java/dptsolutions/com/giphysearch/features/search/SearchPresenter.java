@@ -59,7 +59,11 @@ class SearchPresenter extends MvpBasePresenter<SearchView> {
                         public void call(List<Gif> gifs) {
                             Timber.d("Got page of gifs");
                             if(isViewAttached()) {
-                                getView().addGifs(gifs);
+                                if(gifs.size() > 0) {
+                                    getView().addGifs(gifs);
+                                } else {
+                                    getView().showNoResults();
+                                }
                             }
                         }
                     }, new Action1<Throwable>() {

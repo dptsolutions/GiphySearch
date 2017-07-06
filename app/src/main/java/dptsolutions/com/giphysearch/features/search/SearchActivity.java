@@ -57,6 +57,8 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     EditText searchBox;
     @BindView(R.id.search_button)
     ImageButton searchButton;
+    @BindView(R.id.no_results)
+    TextView noResults;
 
     @BindString(R.string.rating_everyone)
     String ratingEveryoneLabel;
@@ -145,6 +147,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     public void addGifs(List<Gif> newGifs) {
         gifAdapter.addGifs(newGifs);
         loadingProgressBar.setVisibility(View.GONE);
+        noResults.setVisibility(View.GONE);
         gifRecyclerView.setVisibility(View.VISIBLE);
     }
 
@@ -158,6 +161,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
 
     @Override
     public void showError() {
+        loadingProgressBar.setVisibility(View.GONE);
         errorBar.show();
     }
 
@@ -165,7 +169,19 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     public void showLoading() {
         Timber.d("In showLoading");
         gifRecyclerView.setVisibility(View.GONE);
+        noResults.setVisibility(View.GONE);
         loadingProgressBar.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void showNoResults() {
+        loadingProgressBar.setVisibility(View.GONE);
+        if(currentPage == 0) {
+
+            //Only show this if we got no results on the first page
+            gifRecyclerView.setVisibility(View.GONE);
+            noResults.setVisibility(View.VISIBLE);
+        }
     }
 
     private void initToolbar() {
