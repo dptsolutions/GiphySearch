@@ -20,4 +20,6 @@ interface SearchView extends MvpView {
     void showLoading();
 
     void showNoResults();
+
+    void displayOriginalVersion(Gif gif);
 }

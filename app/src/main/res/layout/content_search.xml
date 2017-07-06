@@ -29,4 +29,19 @@
         android:text="@string/no_search_results"
         android:layout_gravity="center"
         android:visibility="gone" />
+
+    <RelativeLayout
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black_semi_transparent"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/original_gif"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"/>
+
+    </RelativeLayout>
 </FrameLayout>

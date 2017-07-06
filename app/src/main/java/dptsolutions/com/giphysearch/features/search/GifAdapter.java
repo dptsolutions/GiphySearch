@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.jakewharton.rxbinding.view.RxView;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,32 +19,43 @@ import dptsolutions.com.giphysearch.GlideApp;
 import dptsolutions.com.giphysearch.R;
 import dptsolutions.com.giphysearch.dagger.ScreenColumnCount;
 import dptsolutions.com.giphysearch.repositories.models.Gif;
+import rx.Observable;
+import rx.functions.Func1;
+import rx.subjects.PublishSubject;
 
 /**
  * RecyclerView Adapter for gifs
  */
 class GifAdapter extends RecyclerView.Adapter<GifAdapter.GifViewHolder> {
 
-    private final int columnCount;
     private ArrayList<Gif> gifs = new ArrayList<>();
+    private PublishSubject<Gif> selectedGifSubject = PublishSubject.create();
 
     @Inject
-    GifAdapter(@ScreenColumnCount int columnCount) {
-
-        this.columnCount = columnCount;
+    GifAdapter() {
     }
 
     @Override
     public GifViewHolder onCreateViewHolder(ViewGroup viewGroup, int position) {
         LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
         View gifView = inflater.inflate(R.layout.gif_tile, viewGroup, false);
-        return new GifViewHolder(gifView);
+        final GifViewHolder gifViewHolder = new GifViewHolder(gifView);
+        RxView.clicks(gifView)
+                .takeUntil(RxView.detaches(viewGroup))
+                .map(new Func1<Void, Gif>() {
+                    @Override
+                    public Gif call(Void aVoid) {
+                        return gifViewHolder.getGif();
+                    }
+                })
+                .subscribe(selectedGifSubject);
+        return gifViewHolder;
     }
 
     @Override
     public void onBindViewHolder(GifViewHolder viewHolder, int position) {
         Gif gif = gifs.get(position);
-        viewHolder.bind(gif, position % columnCount == 0);
+        viewHolder.bind(gif);
     }
 
     @Override
@@ -60,6 +73,10 @@ class GifAdapter extends RecyclerView.Adapter<GifAdapter.GifViewHolder> {
         notifyDataSetChanged();
     }
 
+    Observable<Gif> getSelectedGifObservable() {
+        return selectedGifSubject.asObservable();
+    }
+
     ArrayList<Gif> getGifs() {
         return gifs;
     }
@@ -74,6 +91,7 @@ class GifAdapter extends RecyclerView.Adapter<GifAdapter.GifViewHolder> {
         @BindView(R.id.preview)
         ImageView gifPreview;
 
+
         GifViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
@@ -82,7 +100,7 @@ class GifAdapter extends RecyclerView.Adapter<GifAdapter.GifViewHolder> {
         /**
          * Binds a Gif to this ViewHolder
          */
-        void bind(Gif gif, boolean doBreak) {
+        void bind(Gif gif) {
             this.gif = gif;
             GlideApp.with(gifPreview)
                     .asGif()

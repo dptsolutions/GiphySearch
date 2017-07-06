@@ -16,8 +16,10 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
@@ -32,12 +34,16 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnTouch;
 import dagger.android.AndroidInjection;
+import dptsolutions.com.giphysearch.GlideApp;
 import dptsolutions.com.giphysearch.R;
 import dptsolutions.com.giphysearch.dagger.ScreenColumnCount;
 import dptsolutions.com.giphysearch.recyclerview.EndlessRecyclerOnScrollListener;
 import dptsolutions.com.giphysearch.repositories.models.Gif;
 import dptsolutions.com.giphysearch.repositories.models.Rating;
+import rx.functions.Action1;
+import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
 public class SearchActivity extends AppCompatActivity implements SearchView {
@@ -59,6 +65,10 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     ImageButton searchButton;
     @BindView(R.id.no_results)
     TextView noResults;
+    @BindView(R.id.overlay)
+    View overlay;
+    @BindView(R.id.original_gif)
+    ImageView originalGif;
 
     @BindString(R.string.rating_everyone)
     String ratingEveryoneLabel;
@@ -94,6 +104,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     private int currentPage = -1;
     private EndlessRecyclerOnScrollListener nextPageScrollListener;
     private Snackbar errorBar;
+    private CompositeSubscription subscriptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +112,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
         ButterKnife.bind(this);
+        subscriptions = new CompositeSubscription();
 
         if(savedInstanceState != null) {
             currentSearchTerms = savedInstanceState.getString(STATE_KEY_SEARCH_TERMS, "");
@@ -116,6 +128,12 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         initRatingsFab();
         initToolbar();
         initErrorSnackbar();
+        subscriptions.add(gifAdapter.getSelectedGifObservable().subscribe(new Action1<Gif>() {
+            @Override
+            public void call(Gif gif) {
+                searchPresenter.gifSelected(gif);
+            }
+        }));
         searchPresenter.attachView(this);
     }
 
@@ -140,6 +158,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     @Override
     protected void onDestroy() {
         searchPresenter.detachView();
+        subscriptions.clear();
         super.onDestroy();
     }
 
@@ -182,6 +201,18 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
             gifRecyclerView.setVisibility(View.GONE);
             noResults.setVisibility(View.VISIBLE);
         }
+    }
+
+    @Override
+    public void displayOriginalVersion(Gif gif) {
+        GlideApp.with(this)
+                .asGif()
+                .load(gif.fullUrl())
+                .fitCenter()
+                .placeholder(R.drawable.giphy_logo)
+                .into(originalGif);
+        overlay.setVisibility(View.VISIBLE);
+        ratingsFab.setVisibility(View.INVISIBLE);
     }
 
     private void initToolbar() {
@@ -303,5 +334,11 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
             currentSearchTerms = searchText;
         }
         startNewSearch();
+    }
+
+    @OnClick(R.id.overlay)
+    void onOverlayClick() {
+        overlay.setVisibility(View.GONE);
+        ratingsFab.setVisibility(View.VISIBLE);
     }
 }

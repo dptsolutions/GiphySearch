@@ -27,13 +27,12 @@ import timber.log.Timber;
 
 class SearchPresenter extends MvpBasePresenter<SearchView> {
     private final GifRepository gifRepository;
-    private final CompositeSubscription subscriptions;
+    private final CompositeSubscription subscriptions = new CompositeSubscription();
     private ReplaySubject<Integer> paginator;
 
     @Inject
-    SearchPresenter(@Giphy GifRepository gifRepository, CompositeSubscription subscriptions) {
+    SearchPresenter(@Giphy GifRepository gifRepository) {
         this.gifRepository = gifRepository;
-        this.subscriptions = subscriptions;
     }
 
     public void setSearch(final String searchTerms, final Rating rating) {
@@ -101,5 +100,11 @@ class SearchPresenter extends MvpBasePresenter<SearchView> {
     public void detachView() {
         subscriptions.unsubscribe();
         super.detachView();
+    }
+
+    public void gifSelected(Gif gif) {
+        if(isViewAttached()) {
+            getView().displayOriginalVersion(gif);
+        }
     }
 }

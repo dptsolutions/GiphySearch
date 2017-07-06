@@ -8,7 +8,6 @@ import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 import dptsolutions.com.giphysearch.dagger.ScreenColumnCount;
-import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
 /**
@@ -19,11 +18,6 @@ abstract class SearchModule {
 
     @Binds
     abstract SearchView provideSearchView(SearchActivity searchActivity);
-
-    @Provides
-    static CompositeSubscription provideCompositeSubscription() {
-        return new CompositeSubscription();
-    }
 
     @Provides
     @ScreenColumnCount
