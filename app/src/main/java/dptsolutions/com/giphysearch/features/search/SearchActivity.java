@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -38,6 +39,11 @@ import dptsolutions.com.giphysearch.repositories.models.Gif;
 import dptsolutions.com.giphysearch.repositories.models.Rating;
 
 public class SearchActivity extends AppCompatActivity implements SearchView {
+
+    private static final String STATE_KEY_SEARCH_TERMS = "state.search.terms";
+    private static final String STATE_KEY_CURRENT_PAGE = "state.current.page";
+    private static final String STATE_KEY_CURRENT_RATING = "state.current.rating";
+    private static final String STATE_LOADED_ITEMS = "state.loaded.items";
 
     @BindView(R.id.recycler_view)
     RecyclerView gifRecyclerView;
@@ -90,22 +96,21 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
         ButterKnife.bind(this);
+
+        if(savedInstanceState != null) {
+            currentSearchTerms = savedInstanceState.getString(STATE_KEY_SEARCH_TERMS, "");
+            currentPage = savedInstanceState.getInt(STATE_KEY_CURRENT_PAGE, -1);
+            currentRating = Enum.valueOf(Rating.class, savedInstanceState.getString(STATE_KEY_CURRENT_RATING, Rating.EVERYONE.name()));
+            searchPresenter.setSearch(currentSearchTerms, currentRating);
+            ArrayList<Gif> loadedGifs = savedInstanceState.getParcelableArrayList(STATE_LOADED_ITEMS);
+            if (loadedGifs != null && loadedGifs.size() > 0) {
+                addGifs(loadedGifs);
+            }
+        }
         initRecyclerView();
         initRatingsFab();
         initToolbar();
         searchPresenter.attachView(this);
-    }
-
-
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        if(savedInstanceState == null) {
-            return;
-        }
-
-        //Restore state!
     }
 
     @Override
@@ -119,7 +124,10 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        //Save state!
+        outState.putString(STATE_KEY_SEARCH_TERMS, currentSearchTerms);
+        outState.putInt(STATE_KEY_CURRENT_PAGE, currentPage);
+        outState.putString(STATE_KEY_CURRENT_RATING, currentRating.name());
+        outState.putParcelableArrayList(STATE_LOADED_ITEMS, gifAdapter.getGifs());
         super.onSaveInstanceState(outState);
     }
 

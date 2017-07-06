@@ -24,7 +24,7 @@ import dptsolutions.com.giphysearch.repositories.models.Gif;
 class GifAdapter extends RecyclerView.Adapter<GifAdapter.GifViewHolder> {
 
     private final int columnCount;
-    private List<Gif> gifs = new ArrayList<>();
+    private ArrayList<Gif> gifs = new ArrayList<>();
 
     @Inject
     GifAdapter(@ScreenColumnCount int columnCount) {
@@ -58,6 +58,10 @@ class GifAdapter extends RecyclerView.Adapter<GifAdapter.GifViewHolder> {
     void addGifs(List<Gif> newGifs) {
         gifs.addAll(newGifs);
         notifyDataSetChanged();
+    }
+
+    ArrayList<Gif> getGifs() {
+        return gifs;
     }
 
     /**
