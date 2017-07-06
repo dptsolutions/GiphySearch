@@ -1,5 +1,7 @@
 package dptsolutions.com.giphysearch.rest.models;
 
+import android.support.annotation.Nullable;
+
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -17,6 +19,7 @@ interface GiphyImageMp4 {
     /**
      * The size in bytes of the .MP4 file corresponding to this GIF.
      */
+    @Nullable
     @SerializedName("mp4_size")
     String mp4Size();
 }

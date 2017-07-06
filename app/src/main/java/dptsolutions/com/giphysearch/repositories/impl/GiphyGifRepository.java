@@ -78,10 +78,23 @@ public class GiphyGifRepository implements GifRepository {
                                 ? new ArrayList<Gif>(giphyPagedResponse.data().size())
                                 : Collections.<Gif>emptyList();
                         for(GiphyGif gif : giphyPagedResponse.data()) {
+                            //Everything seems to be nullable in the Giphy API, so I guess we should
+                            //have some fallbacks here
+                            String previewUrl;
+                            if(gif.images().fixedHeightDownsampled() != null) {
+                                previewUrl = gif.images().fixedHeightDownsampled().url();
+                            } else if(gif.images().fixedHeight() != null) {
+                                previewUrl = gif.images().fixedHeight().url();
+                            } else if(gif.images().fixedHeightSmall() != null) {
+                                previewUrl = gif.images().fixedHeightSmall().url();
+                            } else {
+                                //If the original is null, we got serious issues here
+                                previewUrl = gif.images().original().url();
+                            }
                             Gif result = Gif.builder()
                                     .id(gif.id())
                                     .fullUrl(gif.images().original().url())
-                                    .previewUrl(gif.images().fixedHeightDownsampled().url())
+                                    .previewUrl(previewUrl)
                                     .rating(parseRating(gif.rating()))
                                     .build();
                             results.add(result);
