@@ -5,24 +5,24 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewPropertyAnimatorListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,6 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.OnTouch;
 import dagger.android.AndroidInjection;
 import dptsolutions.com.giphysearch.GlideApp;
 import dptsolutions.com.giphysearch.R;
@@ -42,7 +41,9 @@ import dptsolutions.com.giphysearch.dagger.ScreenColumnCount;
 import dptsolutions.com.giphysearch.recyclerview.EndlessRecyclerOnScrollListener;
 import dptsolutions.com.giphysearch.repositories.models.Gif;
 import dptsolutions.com.giphysearch.repositories.models.Rating;
-import rx.functions.Action1;
+import iammert.com.view.scalinglib.ScalingLayout;
+import iammert.com.view.scalinglib.ScalingLayoutListener;
+import iammert.com.view.scalinglib.State;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
@@ -57,8 +58,14 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     RecyclerView gifRecyclerView;
     @BindView(R.id.loading_progress)
     ProgressBar loadingProgressBar;
-    @BindView(R.id.fab)
-    FloatingActionsMenu ratingsFab;
+    @BindView(R.id.click_catcher)
+    View clickCatcher;
+    @BindView(R.id.fab_icon)
+    TextView fabIcon;
+    @BindView(R.id.rating_toolbar)
+    LinearLayout ratingsToolbar;
+    @BindView(R.id.scaling_layout)
+    ScalingLayout scalingLayout;
     @BindView(R.id.search_box)
     EditText searchBox;
     @BindView(R.id.search_button)
@@ -70,16 +77,26 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     @BindView(R.id.original_gif)
     ImageView originalGif;
 
-    @BindString(R.string.rating_everyone)
+    @BindString(R.string.rating_everyone_label)
     String ratingEveryoneLabel;
-    @BindString(R.string.rating_teen)
+    @BindString(R.string.rating_teen_label)
     String ratingTeenLabel;
-    @BindString(R.string.rating_adult)
+    @BindString(R.string.rating_adult_label)
     String ratingAdultLabel;
-    @BindString(R.string.rating_nsfw)
+    @BindString(R.string.rating_nsfw_label)
     String ratingNsfwLabel;
-    @BindString(R.string.rating_na)
+    @BindString(R.string.rating_na_label)
     String ratingNotAvailableLabel;
+    @BindString(R.string.rating_everyone_short_label)
+    String ratingEveryoneShortLabel;
+    @BindString(R.string.rating_teen_short_label)
+    String ratingTeenShortLabel;
+    @BindString(R.string.rating_adult_short_label)
+    String ratingAdultShortLabel;
+    @BindString(R.string.rating_nsfw_short_label)
+    String ratingNsfwShortLabel;
+    @BindString(R.string.rating_na_short_label)
+    String ratingNotAvailableShortLabel;
 
     Drawable searchIcon;
 
@@ -114,6 +131,11 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         ButterKnife.bind(this);
         subscriptions = new CompositeSubscription();
 
+        initRecyclerView();
+        initRatingsFab();
+        initToolbar();
+        initErrorSnackbar();
+
         if(savedInstanceState != null) {
             currentSearchTerms = savedInstanceState.getString(STATE_KEY_SEARCH_TERMS, "");
             currentPage = savedInstanceState.getInt(STATE_KEY_CURRENT_PAGE, -1);
@@ -124,16 +146,10 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
                 addGifs(loadedGifs);
             }
         }
-        initRecyclerView();
-        initRatingsFab();
-        initToolbar();
-        initErrorSnackbar();
-        subscriptions.add(gifAdapter.getSelectedGifObservable().subscribe(new Action1<Gif>() {
-            @Override
-            public void call(Gif gif) {
-                searchPresenter.gifSelected(gif);
-            }
-        }));
+
+        setFabIcon(currentRating);
+
+        subscriptions.add(gifAdapter.getSelectedGifObservable().subscribe(gif -> searchPresenter.gifSelected(gif)));
         searchPresenter.attachView(this);
     }
 
@@ -212,11 +228,10 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
                 .placeholder(R.drawable.giphy_logo)
                 .into(originalGif);
         overlay.setVisibility(View.VISIBLE);
-        ratingsFab.setVisibility(View.INVISIBLE);
     }
 
     private void initToolbar() {
-        searchIcon = DrawableCompat.wrap(AppCompatResources.getDrawable(this,R.drawable.ic_search_black_24dp));
+        searchIcon = DrawableCompat.wrap(AppCompatResources.getDrawable(this,R.drawable.ic_search_white_24dp));
         searchIcon.setTint(accentColor);
         searchButton.setImageDrawable(searchIcon);
         searchBox.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -238,33 +253,117 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     }
 
     private void initRatingsFab() {
+        LayoutInflater inflater = LayoutInflater.from(this);
         for(Rating rating : searchPresenter.getSupportedRatings()) {
-            FloatingActionButton ratingFab = new FloatingActionButton(this);
-            String label = "";
+            String label;
+            String icon;
             switch (rating) {
                 case EVERYONE:
                     label = ratingEveryoneLabel;
+                    icon = ratingEveryoneShortLabel;
                     break;
                 case TEEN:
                     label = ratingTeenLabel;
+                    icon = ratingTeenShortLabel;
                     break;
                 case ADULT:
                     label = ratingAdultLabel;
+                    icon = ratingAdultShortLabel;
                     break;
                 case NSFW:
                     label = ratingNsfwLabel;
+                    icon = ratingNsfwShortLabel;
                     break;
                 case NA:
                     label = ratingNotAvailableLabel;
+                    icon = ratingNotAvailableShortLabel;
                     break;
+                default:
+                    //Ignore unknown
+                    Timber.w("Unknown rating %s. Skipping adding rating to ratingsToolbar.", rating);
+                    continue;
             }
-            ratingFab.setTitle(label);
-            ratingFab.setTag(R.id.rating, rating);
-            ratingFab.setSize(FloatingActionButton.SIZE_MINI);
-            ratingFab.setOnClickListener(ratingFabClickListener);
-            ratingFab.setColorNormal(accentColor);
-            ratingsFab.addButton(ratingFab);
+
+            View ratingButton = inflater.inflate(R.layout.rating_filter_item, ratingsToolbar, false);
+            TextView iconView = ratingButton.findViewById(R.id.icon);
+            TextView labelView = ratingButton.findViewById(R.id.text);
+            iconView.setText(icon);
+            labelView.setText(label);
+            ratingButton.setTag(R.id.rating, rating);
+            ratingButton.setOnClickListener(ratingFabClickListener);
+            ratingsToolbar.addView(ratingButton);
         }
+
+        scalingLayout.setListener(new ScalingLayoutListener() {
+            @Override
+            public void onCollapsed() {
+                ViewCompat.animate(fabIcon).alpha(1).setDuration(150).start();
+                ViewCompat.animate(ratingsToolbar).alpha(0).setDuration(150).setListener(new ViewPropertyAnimatorListener() {
+                    @Override
+                    public void onAnimationStart(View view) {
+                        fabIcon.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationEnd(View view) {
+                        ratingsToolbar.setVisibility(View.INVISIBLE);
+                        clickCatcher.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(View view) {
+
+                    }
+                }).start();
+            }
+
+            @Override
+            public void onExpanded() {
+                ViewCompat.animate(fabIcon).alpha(0).setDuration(200).start();
+                ViewCompat.animate(ratingsToolbar).alpha(1).setDuration(200).setListener(new ViewPropertyAnimatorListener() {
+                    @Override
+                    public void onAnimationStart(View view) {
+                        ratingsToolbar.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationEnd(View view) {
+                        fabIcon.setVisibility(View.INVISIBLE);
+                        clickCatcher.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(View view) {
+
+                    }
+                }).start();
+            }
+
+            @Override
+            public void onProgress(float progress) {
+                if (progress > 0) {
+                    fabIcon.setVisibility(View.INVISIBLE);
+                }
+
+                if(progress < 1){
+                    ratingsToolbar.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+
+        scalingLayout.setOnClickListener(view -> {
+            if (scalingLayout.getState() == State.COLLAPSED) {
+                scalingLayout.expand();
+            }
+        });
+
+        findViewById(R.id.click_catcher).setOnClickListener(view -> {
+            if (scalingLayout.getState() == State.EXPANDED) {
+                scalingLayout.collapse();
+            }
+        });
+
+
     }
 
     private void initRecyclerView() {
@@ -281,14 +380,11 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
 
     private void initErrorSnackbar() {
         errorBar = Snackbar.make(gifRecyclerView, R.string.loading_error, Snackbar.LENGTH_INDEFINITE);
-        errorBar.setAction(R.string.action_retry, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Since an error was thrown, we need to reset the search
-                searchPresenter.setSearch(currentSearchTerms, currentRating);
-                loadCurrentPage();
-                errorBar.dismiss();
-            }
+        errorBar.setAction(R.string.action_retry, v -> {
+            //Since an error was thrown, we need to reset the search
+            searchPresenter.setSearch(currentSearchTerms, currentRating);
+            loadCurrentPage();
+            errorBar.dismiss();
         });
     }
 
@@ -308,17 +404,38 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         searchPresenter.getPage(currentPage);
     }
 
-    private View.OnClickListener ratingFabClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Rating selectedRating = (Rating) v.getTag(R.id.rating);
-            if(selectedRating != currentRating) {
-                currentRating = selectedRating;
-                startNewSearch();
-            }
-
-            ratingsFab.toggle();
+    private void setFabIcon(Rating rating) {
+        switch (rating) {
+            case EVERYONE:
+                fabIcon.setText(ratingEveryoneShortLabel);
+                break;
+            case TEEN:
+                fabIcon.setText(ratingTeenShortLabel);
+                break;
+            case ADULT:
+                fabIcon.setText(ratingAdultShortLabel);
+                break;
+            case NSFW:
+                fabIcon.setText(ratingNsfwShortLabel);
+                break;
+            case NA:
+                fabIcon.setText(ratingNotAvailableShortLabel);
+                break;
+            default:
+                //Ignore unknown
+                Timber.w("Unknown rating %s. Skipping setting fab icon.", rating);
         }
+    }
+
+    private View.OnClickListener ratingFabClickListener = v -> {
+        Rating selectedRating = (Rating) v.getTag(R.id.rating);
+        if(selectedRating != currentRating) {
+            currentRating = selectedRating;
+            setFabIcon(currentRating);
+            startNewSearch();
+        }
+
+        scalingLayout.collapse();
     };
 
     @OnClick(R.id.search_button)
@@ -339,6 +456,5 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     @OnClick(R.id.overlay)
     void onOverlayClick() {
         overlay.setVisibility(View.GONE);
-        ratingsFab.setVisibility(View.VISIBLE);
     }
 }

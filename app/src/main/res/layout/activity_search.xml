@@ -32,15 +32,15 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:hint="@string/search_box_hint"
-                    android:lines="1"
+                    android:imeOptions="actionSearch"
                     android:inputType="text"
-                    android:imeOptions="actionSearch"/>
+                    android:lines="1" />
 
                 <ImageButton
                     android:id="@+id/search_button"
+                    style="@style/Widget.AppCompat.ActionButton"
                     android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    style="@style/Widget.AppCompat.ActionButton"/>
+                    android:layout_height="48dp" />
 
             </LinearLayout>
 
@@ -48,17 +48,49 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_search" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <com.getbase.floatingactionbutton.FloatingActionsMenu
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        <include layout="@layout/content_search" />
+
+        <View
+            android:id="@+id/click_catcher"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+
+    <iammert.com.view.scalinglib.ScalingLayout
+        android:id="@+id/scaling_layout"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:fab_labelsPosition="left"
-        app:fab_expandDirection="up"
-        app:fab_addButtonColorNormal="?attr/colorAccent"
-        app:fab_labelStyle="@style/AppTheme.FloatingActionMenuLabel"/>
+        android:background="@color/colorAccent"
+        app:radiusFactor="1">
+
+        <TextView
+            android:id="@+id/fab_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:gravity="center|clip_vertical|clip_horizontal"
+            android:textColor="@color/filterTextColor"
+            android:textSize="24dp"
+            android:textStyle="bold"
+            tools:text="E" />
+
+        <LinearLayout
+            android:id="@+id/rating_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:visibility="invisible" />
+
+    </iammert.com.view.scalinglib.ScalingLayout>
 
 </android.support.design.widget.CoordinatorLayout>

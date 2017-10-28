@@ -27,8 +27,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
@@ -99,7 +99,7 @@ dependencies {
         transitive = false
     }
 
-    implementation 'com.getbase:floatingactionbutton:1.10.1'
+    implementation 'com.github.iammert:ScalingLayout:1.1'
 
     testImplementation'junit:junit:4.12'
 }
