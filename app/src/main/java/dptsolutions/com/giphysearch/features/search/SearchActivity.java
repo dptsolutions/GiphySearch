@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -45,7 +44,6 @@ import dptsolutions.com.giphysearch.repositories.models.Rating;
 import iammert.com.view.scalinglib.ScalingLayout;
 import iammert.com.view.scalinglib.ScalingLayoutListener;
 import iammert.com.view.scalinglib.State;
-import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
@@ -63,7 +61,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     @BindView(R.id.click_catcher)
     View clickCatcher;
     @BindView(R.id.fab_icon)
-    ImageView fabIcon;
+    TextView fabIcon;
     @BindView(R.id.rating_toolbar)
     LinearLayout ratingsToolbar;
     @BindView(R.id.scaling_layout)
@@ -133,6 +131,11 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         ButterKnife.bind(this);
         subscriptions = new CompositeSubscription();
 
+        initRecyclerView();
+        initRatingsFab();
+        initToolbar();
+        initErrorSnackbar();
+
         if(savedInstanceState != null) {
             currentSearchTerms = savedInstanceState.getString(STATE_KEY_SEARCH_TERMS, "");
             currentPage = savedInstanceState.getInt(STATE_KEY_CURRENT_PAGE, -1);
@@ -143,16 +146,10 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
                 addGifs(loadedGifs);
             }
         }
-        initRecyclerView();
-        initRatingsFab();
-        initToolbar();
-        initErrorSnackbar();
-        subscriptions.add(gifAdapter.getSelectedGifObservable().subscribe(new Action1<Gif>() {
-            @Override
-            public void call(Gif gif) {
-                searchPresenter.gifSelected(gif);
-            }
-        }));
+
+        setFabIcon(currentRating);
+
+        subscriptions.add(gifAdapter.getSelectedGifObservable().subscribe(gif -> searchPresenter.gifSelected(gif)));
         searchPresenter.attachView(this);
     }
 
@@ -231,7 +228,6 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
                 .placeholder(R.drawable.giphy_logo)
                 .into(originalGif);
         overlay.setVisibility(View.VISIBLE);
-        //fabIcon.setVisibility(View.INVISIBLE);
     }
 
     private void initToolbar() {
@@ -284,7 +280,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
                     break;
                 default:
                     //Ignore unknown
-                    Timber.w("Unknown rating %s. Skipping.", rating);
+                    Timber.w("Unknown rating %s. Skipping adding rating to ratingsToolbar.", rating);
                     continue;
             }
 
@@ -296,9 +292,8 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
             ratingButton.setTag(R.id.rating, rating);
             ratingButton.setOnClickListener(ratingFabClickListener);
             ratingsToolbar.addView(ratingButton);
-
-
         }
+
         scalingLayout.setListener(new ScalingLayoutListener() {
             @Override
             public void onCollapsed() {
@@ -409,10 +404,34 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
         searchPresenter.getPage(currentPage);
     }
 
+    private void setFabIcon(Rating rating) {
+        switch (rating) {
+            case EVERYONE:
+                fabIcon.setText(ratingEveryoneShortLabel);
+                break;
+            case TEEN:
+                fabIcon.setText(ratingTeenShortLabel);
+                break;
+            case ADULT:
+                fabIcon.setText(ratingAdultShortLabel);
+                break;
+            case NSFW:
+                fabIcon.setText(ratingNsfwShortLabel);
+                break;
+            case NA:
+                fabIcon.setText(ratingNotAvailableShortLabel);
+                break;
+            default:
+                //Ignore unknown
+                Timber.w("Unknown rating %s. Skipping setting fab icon.", rating);
+        }
+    }
+
     private View.OnClickListener ratingFabClickListener = v -> {
         Rating selectedRating = (Rating) v.getTag(R.id.rating);
         if(selectedRating != currentRating) {
             currentRating = selectedRating;
+            setFabIcon(currentRating);
             startNewSearch();
         }
 

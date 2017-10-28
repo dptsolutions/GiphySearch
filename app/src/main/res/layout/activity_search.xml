@@ -73,12 +73,16 @@
         android:background="@color/colorAccent"
         app:radiusFactor="1">
 
-        <ImageView
+        <TextView
             android:id="@+id/fab_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_gravity="center"
-            android:src="@drawable/ic_filter_white_24dp" />
+            android:gravity="center|clip_vertical|clip_horizontal"
+            android:textColor="@color/filterTextColor"
+            android:textSize="24dp"
+            android:textStyle="bold"
+            tools:text="E" />
 
         <LinearLayout
             android:id="@+id/rating_toolbar"
