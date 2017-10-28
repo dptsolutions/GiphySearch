@@ -71,7 +71,6 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         android:background="@color/colorAccent"
-        android:elevation="48dp"
         app:radiusFactor="1">
 
         <ImageView
@@ -86,44 +85,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal"
-            android:visibility="invisible">
-
-            <TextView
-                android:id="@+id/rating_everyone"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight=".2"
-                android:text="E" />
-
-            <TextView
-                android:id="@+id/rating_teen"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight=".2"
-                android:text="T" />
-
-            <TextView
-                android:id="@+id/rating_adult"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight=".2"
-                android:text="A" />
-
-            <TextView
-                android:id="@+id/rating_nsfw"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight=".2"
-                android:text="NSFW" />
-
-            <TextView
-                android:id="@+id/rating_not_available"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight=".2"
-                android:text="NA" />
-
-        </LinearLayout>
+            android:visibility="invisible" />
 
     </iammert.com.view.scalinglib.ScalingLayout>
 
