@@ -5,10 +5,13 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewPropertyAnimatorListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -17,12 +20,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,6 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.OnTouch;
 import dagger.android.AndroidInjection;
 import dptsolutions.com.giphysearch.GlideApp;
 import dptsolutions.com.giphysearch.R;
@@ -42,6 +41,9 @@ import dptsolutions.com.giphysearch.dagger.ScreenColumnCount;
 import dptsolutions.com.giphysearch.recyclerview.EndlessRecyclerOnScrollListener;
 import dptsolutions.com.giphysearch.repositories.models.Gif;
 import dptsolutions.com.giphysearch.repositories.models.Rating;
+import iammert.com.view.scalinglib.ScalingLayout;
+import iammert.com.view.scalinglib.ScalingLayoutListener;
+import iammert.com.view.scalinglib.State;
 import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
@@ -57,8 +59,14 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     RecyclerView gifRecyclerView;
     @BindView(R.id.loading_progress)
     ProgressBar loadingProgressBar;
-    @BindView(R.id.fab)
-    FloatingActionsMenu ratingsFab;
+    @BindView(R.id.click_catcher)
+    View clickCatcher;
+    @BindView(R.id.fab_icon)
+    ImageView fabIcon;
+    @BindView(R.id.rating_toolbar)
+    LinearLayout ratingsToolbar;
+    @BindView(R.id.scaling_layout)
+    ScalingLayout scalingLayout;
     @BindView(R.id.search_box)
     EditText searchBox;
     @BindView(R.id.search_button)
@@ -212,11 +220,11 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
                 .placeholder(R.drawable.giphy_logo)
                 .into(originalGif);
         overlay.setVisibility(View.VISIBLE);
-        ratingsFab.setVisibility(View.INVISIBLE);
+        //fabIcon.setVisibility(View.INVISIBLE);
     }
 
     private void initToolbar() {
-        searchIcon = DrawableCompat.wrap(AppCompatResources.getDrawable(this,R.drawable.ic_search_black_24dp));
+        searchIcon = DrawableCompat.wrap(AppCompatResources.getDrawable(this,R.drawable.ic_search_white_24dp));
         searchIcon.setTint(accentColor);
         searchButton.setImageDrawable(searchIcon);
         searchBox.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -238,33 +246,102 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     }
 
     private void initRatingsFab() {
-        for(Rating rating : searchPresenter.getSupportedRatings()) {
-            FloatingActionButton ratingFab = new FloatingActionButton(this);
-            String label = "";
-            switch (rating) {
-                case EVERYONE:
-                    label = ratingEveryoneLabel;
-                    break;
-                case TEEN:
-                    label = ratingTeenLabel;
-                    break;
-                case ADULT:
-                    label = ratingAdultLabel;
-                    break;
-                case NSFW:
-                    label = ratingNsfwLabel;
-                    break;
-                case NA:
-                    label = ratingNotAvailableLabel;
-                    break;
+        scalingLayout.setListener(new ScalingLayoutListener() {
+            @Override
+            public void onCollapsed() {
+                ViewCompat.animate(fabIcon).alpha(1).setDuration(150).start();
+                ViewCompat.animate(ratingsToolbar).alpha(0).setDuration(150).setListener(new ViewPropertyAnimatorListener() {
+                    @Override
+                    public void onAnimationStart(View view) {
+                        fabIcon.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationEnd(View view) {
+                        ratingsToolbar.setVisibility(View.INVISIBLE);
+                        clickCatcher.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(View view) {
+
+                    }
+                }).start();
             }
-            ratingFab.setTitle(label);
-            ratingFab.setTag(R.id.rating, rating);
-            ratingFab.setSize(FloatingActionButton.SIZE_MINI);
-            ratingFab.setOnClickListener(ratingFabClickListener);
-            ratingFab.setColorNormal(accentColor);
-            ratingsFab.addButton(ratingFab);
-        }
+
+            @Override
+            public void onExpanded() {
+                ViewCompat.animate(fabIcon).alpha(0).setDuration(200).start();
+                ViewCompat.animate(ratingsToolbar).alpha(1).setDuration(200).setListener(new ViewPropertyAnimatorListener() {
+                    @Override
+                    public void onAnimationStart(View view) {
+                        ratingsToolbar.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationEnd(View view) {
+                        fabIcon.setVisibility(View.INVISIBLE);
+                        clickCatcher.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(View view) {
+
+                    }
+                }).start();
+            }
+
+            @Override
+            public void onProgress(float progress) {
+                if (progress > 0) {
+                    fabIcon.setVisibility(View.INVISIBLE);
+                }
+
+                if(progress < 1){
+                    ratingsToolbar.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+
+        scalingLayout.setOnClickListener(view -> {
+            if (scalingLayout.getState() == State.COLLAPSED) {
+                scalingLayout.expand();
+            }
+        });
+
+
+        findViewById(R.id.click_catcher).setOnClickListener(view -> {
+            if (scalingLayout.getState() == State.EXPANDED) {
+                scalingLayout.collapse();
+            }
+        });
+//        for(Rating rating : searchPresenter.getSupportedRatings()) {
+//            FloatingActionButton ratingFab = new FloatingActionButton(this);
+//            String label = "";
+//            switch (rating) {
+//                case EVERYONE:
+//                    label = ratingEveryoneLabel;
+//                    break;
+//                case TEEN:
+//                    label = ratingTeenLabel;
+//                    break;
+//                case ADULT:
+//                    label = ratingAdultLabel;
+//                    break;
+//                case NSFW:
+//                    label = ratingNsfwLabel;
+//                    break;
+//                case NA:
+//                    label = ratingNotAvailableLabel;
+//                    break;
+//            }
+//            ratingFab.setTitle(label);
+//            ratingFab.setTag(R.id.rating, rating);
+//            ratingFab.setSize(FloatingActionButton.SIZE_MINI);
+//            ratingFab.setOnClickListener(ratingFabClickListener);
+//            ratingFab.setColorNormal(accentColor);
+//            fabIcon.addButton(ratingFab);
+//        }
     }
 
     private void initRecyclerView() {
@@ -317,7 +394,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
                 startNewSearch();
             }
 
-            ratingsFab.toggle();
+            //fabIcon.toggle();
         }
     };
 
@@ -339,6 +416,6 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     @OnClick(R.id.overlay)
     void onOverlayClick() {
         overlay.setVisibility(View.GONE);
-        ratingsFab.setVisibility(View.VISIBLE);
+        //fabIcon.setVisibility(View.VISIBLE);
     }
 }
