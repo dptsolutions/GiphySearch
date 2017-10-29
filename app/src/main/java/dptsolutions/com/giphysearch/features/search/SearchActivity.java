@@ -9,7 +9,7 @@ import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPropertyAnimatorListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -110,7 +110,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView {
     GifAdapter gifAdapter;
 
     @Inject
-    GridLayoutManager layoutManager;
+    LinearLayoutManager layoutManager;
 
     @Inject
     @ScreenColumnCount

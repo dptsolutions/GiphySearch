@@ -45,8 +45,8 @@ abstract class SearchModule {
     }
 
     @Provides
-    static GridLayoutManager provideLayoutManager(SearchActivity activity, @ScreenColumnCount int columnCount) {
-        GridLayoutManager layoutManager =new GridLayoutManager(activity, columnCount);
+    static LinearLayoutManager provideLayoutManager(SearchActivity activity, @ScreenColumnCount int columnCount) {
+        GridLayoutManager layoutManager = new GridLayoutManager(activity, columnCount);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         return layoutManager;
     }
